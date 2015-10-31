@@ -43,10 +43,10 @@ Package.onUse(function(api) {
   api.imply([
     'babel-runtime@0.1.4',
     'react-runtime@0.14.1_1',
-    'kadira:dochead@1.0.0'
+    'kadira:dochead@1.3.2'
   ]);
 
-  api.use(['cosmos:browserify@0.7.4'], 'client');
+  api.use(['cosmos:browserify@0.8.3'], 'client');
 
   api.addFiles([
     'exports-server.js',
