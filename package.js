@@ -16,8 +16,8 @@ Package.registerBuildPlugin({
     'babel-compiler@5.8.24_1',
     'ecmascript@0.1.6',
     'underscore@1.0.4',
-    'reactive-var',
-    'tracker'
+    'reactive-var@1.0.6',
+    'tracker@1.0.9'
   ],
   sources: [
     'blaze-regex.js',
@@ -43,7 +43,7 @@ Package.onUse(function(api) {
   api.imply([
     'babel-runtime@0.1.4',
     'react-runtime@0.14.1_1',
-    'kadira:dochead'
+    'kadira:dochead@1.0.0'
   ]);
 
   api.use(['cosmos:browserify@0.7.4'], 'client');
