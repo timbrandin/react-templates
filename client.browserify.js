@@ -1,2 +1,2 @@
-ReactTemplate = {};
-ReactTemplate._classNames = require('classnames/dedupe');
+RT = RT || {};
+RT._classNames = require('classnames/dedupe');

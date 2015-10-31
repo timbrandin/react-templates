@@ -1,4 +1,54 @@
 ReactRegex = [
+  // Add fragment to all outer most tags to allow for adjacent elements.
+  {
+    regex: /<(\w+)[^<>]*>[\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?<\/\1>/g,
+    replace: "<FRAGMENT>$&</FRAGMENT>"
+  },
+  // Create fragments of remaining content that is not within an outer most tag.
+  {
+    regex: /<\/FRAGMENT>([\w\W]+?)<FRAGMENT>/g,
+    replace: "<FRAGMENT>$&</FRAGMENT>"
+  },
+  // Create fragments for leading content.
+  {
+    regex: /^([\w\W]+)<FRAGMENT>/g,
+    replace: "<FRAGMENT>$1</FRAGMENT><FRAGMENT>"
+  },
+  // Create fragments for trailing content.
+  {
+    regex: /(?:<\/FRAGMENT>(?!<FRAGMENT>)([\w\W]+)$)/g,
+    replace: "</FRAGMENT><FRAGMENT>$1</FRAGMENT>"
+  },
+  // Remove empty fragments.
+  {
+    regex: /<FRAGMENT>([\s]+)<\/FRAGMENT>/g,
+    replace: "$1"
+  },
+  // Start the element array in case of multiple fragments.
+  {
+    regex: /^([\s]*)<FRAGMENT>([\w\W]+(?=<FRAGMENT>))/,
+    replace: "<div>$1$2"
+  },
+  // End the element array in case of multiple fragments.
+  {
+    regex: /(<\/FRAGMENT>[\w\W]*?<FRAGMENT>[\w\W]*?)<\/FRAGMENT>(\s*)$/,
+    replace: "$1$2</div>"
+  },
+  // Split fragments in elements.
+  {
+    regex: /<\/FRAGMENT>([\s]*)<FRAGMENT>/g,
+    replace: "$1" // ",$1"
+  },
+  // Clear away remaining FRAGMENTS, occurs when only on fragment is found in the template.
+  {
+    regex: /<\/?FRAGMENT>/g,
+    replace: ""
+  },
+  // Append child components when using {{> template/component}}.
+  {
+    regex: /({{>\s+([^}]+)}})/g,
+    replace: "<RT.get template='$2' context={context}/>"
+  },
   // Add return and key={index} inside {{#each}}.
   {
     regex: /({{#each\s+[^}]+}}[^<]*)(<\w+)/g,
@@ -7,7 +57,7 @@ ReactRegex = [
   // {{#each}} in
   {
     regex: /{{#each\s+([^\s]+)\s+in\s+([^}]+)\s*}}/g,
-    replace: "{(ReactTemplate.check(context, '$2') ? context.$2 : []).map(function($1, index){let context=__component;context.$1=$1"
+    replace: "{(RT.check(context, '$2') ? context.$2 : []).map(function($1, index){let context=__component;context.$1=$1"
   },
   // {{/each}}
   {
@@ -17,7 +67,7 @@ ReactRegex = [
   // ^{{#if}}
   {
     regex: /^\W*{{#if\s+([\w]+)\s*}}/g,
-    replace: "<span>{ReactTemplate.check(context, '$1') ? ("
+    replace: "<span>{RT.check(context, '$1') ? ("
   },
   // ^{{#if ...}}
   {
@@ -38,7 +88,7 @@ ReactRegex = [
   // {{#if}}
   {
     regex: /{{#if\s+(\w+)\s*}}/g,
-    replace: "{ReactTemplate.check(context, '$1') ? ("
+    replace: "{RT.check(context, '$1') ? ("
   },
   // {{else}} {{/if}}
   {
@@ -53,7 +103,7 @@ ReactRegex = [
   // ^{{#unless}}
   {
     regex: /^\W*{{#unless\s+(\w+)\s*}}/g,
-    replace: "<span>{!ReactTemplate.check(context, '$1') ? ("
+    replace: "<span>{!RT.check(context, '$1') ? ("
   },
   // {{/unless}}$
   {
@@ -63,7 +113,7 @@ ReactRegex = [
   // {{#unless}}
   {
     regex: /{{#unless\s+(\w+)\s*}}/g,
-    replace: "{!ReactTemplate.check(context, '$1') ? ("
+    replace: "{!RT.check(context, '$1') ? ("
   },
   // {{else}} {{/unless}}
   {
@@ -80,34 +130,35 @@ ReactRegex = [
   // {{{helper}}} raw HTML
   {
     regex: /{{{([^}]*)}}}/g,
-    replace: "{ReactTemplate.check(context, '$1') ? context.$1 : ''}"
+    replace: "{RT.check(context, '$1') ? context.$1 : ''}"
   },
   // {{helper}} SafeString – Dynamic Attribute (class)
   {
     regex: /\sclass={{([^}]*)}}/g,
-    replace: " className={ReactTemplate.check(context, '$1') ? '' + new ReactTemplate.classNames(context.$1) : ''}"
+    replace: " className={RT.check(context, '$1') ? '' + new RT.classNames(context.$1) : ''}"
   },
 
   // {{helper}} SafeString – Dynamic Attribute (other)
   {
     regex: /={{([^}]*)}}/g,
-    replace: "={ReactTemplate.check(context, '$1') ? '' + new ReactTemplate.SafeString(context.$1) : ''}"
+    replace: "={RT.check(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
   },
 
   // {{helper}} SafeString – In Attribute Values (class)
   {
     regex: /\sclass="([^\"{]*){{([^}]*)}}([^\"{]*)\"/g,
-    replace: " className={ReactTemplate.check(context, '$2') ? '$1' + new ReactTemplate.classNames(context.$2) + '$3' : ''}"
+    replace: " className={RT.check(context, '$2') ? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
   },
   // {{helper}} SafeString – In Attribute Values (other)
   {
     regex: /="([^\"{]*){{([^}]*)}}([^\"{]*)\"/g,
-    replace: "={ReactTemplate.check(context, '$2')? '$1' + new ReactTemplate.classNames(context.$2) + '$3' : ''}"
+    replace: "={RT.check(context, '$2')? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
   },
   // {{helper}} SafeString
   {
     regex: /{{([^}]*)}}/g,
-    replace: "{ReactTemplate.check(context, '$1') ? '' + new ReactTemplate.SafeString(context.$1) : ''}"
+    // replace: "{RT.check(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
+    replace: "{RT.string(context, '$1')}"
   },
   // Fix that annoying issue with React, and allow usage of class.
   {

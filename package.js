@@ -14,12 +14,13 @@ Package.registerBuildPlugin({
   name: 'react-templates',
   use: [
     'babel-compiler@5.8.24_1',
-    'ecmascript@0.1.4',
+    'ecmascript@0.1.6',
     'underscore@1.0.4',
     'reactive-var',
     'tracker'
   ],
   sources: [
+    'blaze-regex.js',
     'react-regex.js',
     'react-events.js',
     'plugin/plugin.js'
@@ -34,18 +35,22 @@ Npm.depends({
 });
 
 Package.onUse(function(api) {
-  api.versionsFrom('1.2.0.1');
+  api.versionsFrom('1.2.1');
   api.use([
     'ecmascript',
-    'isobuild:compiler-plugin@1.0.0'
+    'isobuild:compiler-plugin@1.0.0',
   ]);
-  api.imply('babel-runtime@0.1.4');
+  api.imply([
+    'babel-runtime@0.1.4',
+    'react-runtime@0.14.1_1',
+    'kadira:dochead'
+  ]);
 
   api.use(['cosmos:browserify@0.7.4'], 'client');
 
   api.addFiles([
-    'classnames-server.js',
-    'exports.js'
+    'exports-server.js',
+    'exports.js',
   ], 'server');
 
   api.addFiles([
@@ -53,7 +58,7 @@ Package.onUse(function(api) {
     'exports.js'
   ], 'client');
 
-  api.export('ReactTemplate');
+  api.export(['RT', 'ReactTemplate']);
 });
 
 Package.onTest(function(api) {

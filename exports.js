@@ -1,19 +1,22 @@
+RT = RT || {};
+ReactTemplate = {};
+
 // Build out Handlebars basic SafeString type
-ReactTemplate.SafeString = function(string) {
+RT.SafeString = function(string) {
   this.string = string;
 };
-ReactTemplate.SafeString.prototype.toString = ReactTemplate.SafeString.prototype.toHTML = function() {
+RT.SafeString.prototype.toString = RT.SafeString.prototype.toHTML = function() {
   return '' + this.string;
 };
 
-ReactTemplate.classNames = function(obj) {
+RT.classNames = function(obj) {
   this.obj = obj;
 };
-ReactTemplate.classNames.prototype.toString = ReactTemplate.classNames.prototype.toHTML = function() {
-  return '' + new ReactTemplate.SafeString(ReactTemplate._classNames(this.obj));
+RT.classNames.prototype.toString = RT.classNames.prototype.toHTML = function() {
+  return '' + new RT.SafeString(RT._classNames(this.obj));
 };
 
-ReactTemplate.check = function(context, string) {
+RT.check = function(context, string) {
   const tests = string.split('.');
   if (!context) {
     return false;
@@ -30,3 +33,22 @@ ReactTemplate.check = function(context, string) {
   });
   return obj;
 };
+
+RT.string = function(context, string) {
+  if (RT.check(context, string)) {
+    return "" + new RT.SafeString(context.counter);
+  }
+  return "";
+}
+
+RT.get = function(props) {
+  // A component exists for the template.
+  if (window[props.template]) {
+    return React.createElement(window[props.template], _.omit(props, 'template'));
+  }
+  // A template exists.
+  else if (ReactTemplate[props.template]) {
+    return React.createElement(ReactTemplate[props.template], _.omit(props, 'template'));
+  }
+  return "";
+}

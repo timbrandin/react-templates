@@ -1,4 +1,4 @@
-class ReactTemplate {
+ReactTemplate = class {
   constructor(source) {
     this._source = source;
   }
@@ -6,11 +6,8 @@ class ReactTemplate {
     markup = ReactTemplate.appendEventMap(className, markup);
 
     ReactRegex.forEach(function (obj) {
-      // console.log(markup, '\n');
       markup = markup.replace(obj.regex, obj.replace);
     });
-
-    // console.log(markup, '\n');
 
     return markup;
   }
@@ -21,19 +18,11 @@ class ReactTemplate {
     return markup;
   }
   parse(source) {
-    let jsx = "";
-    // Find and start parsing and compiling each templates.
-    const parts = source.split(/<template name="(\w+)">/i);
-    const extras = parts[0];
-    for(let i=1; i <= parts.length-1; i+=2) {
-      const className = parts[i];
+    let jsx = source;
 
-      // Split out the trailing end after the template.
-      const code = parts[i+1].split(/<\/template>/i);
-      const markup = ReactTemplate.compile(className, code[0] || '');
-
-      jsx += `ReactTemplate.${className} = (context) => { return (${markup}) };\n`;
-    }
+    BlazeRegex.forEach(function (obj) {
+      jsx = jsx.replace(obj.regex, obj.replace);
+    });
 
     return jsx;
   }
@@ -45,7 +34,7 @@ class ReactTemplate {
 ReactTemplateCompiler = class ReactTemplateCompiler {
   processFilesForTarget(inputFiles) {
     inputFiles.forEach(function (inputFile) {
-      var source = inputFile.getContentsAsString();
+      let original = inputFile.getContentsAsString();
       var inputFilePath = inputFile.getPathInPackage();
       var outputFilePath = inputFile.getPathInPackage();
       var fileOptions = inputFile.getFileOptions();
@@ -58,8 +47,8 @@ ReactTemplateCompiler = class ReactTemplateCompiler {
         bare: !! fileOptions.bare
       };
 
-      const jsx = new ReactTemplate(source);
-      const result = ReactTemplateCompiler.transpileJSX(jsx, inputFile);
+      source = "" + new ReactTemplate(original);
+      const result = ReactTemplateCompiler.transpile(source, inputFile);
       toBeAdded.data = result.code;
       toBeAdded.hash = result.hash;
       toBeAdded.sourceMap = result.map;
@@ -67,44 +56,76 @@ ReactTemplateCompiler = class ReactTemplateCompiler {
       inputFile.addJavaScript(toBeAdded);
     });
   }
-  static transpileJSX(jsx, inputFile) {
-    // Capture jsx failures in compiling.
-    try {
-      // This uses hoisting at function level
-      var result = Babel.transformMeteor("" + jsx, {
-        sourceMap: true,
-        filename: inputFile.getPathInPackage(),
-        sourceMapName: inputFile.getPathInPackage(),
-        extraWhitelist: ["react"]
-      });
-    } catch (e) {
-      if (e.loc) {
-        // Babel error
-        inputFile.error({
-          message: e.message,
-          sourcePath: inputFile.getPathInPackage(),
-          line: e.loc.line,
-          column: e.loc.column
-        });
 
-        console.log('\n\n\n');
-        console.log(inputFile.getPathInPackage());
-        console.log('=====================');
-        console.log(inputFile.getContentsAsString());
-        const lines = ("" + jsx).split(/\n/g);
-        _.each(lines, (line, i) => console.log((i+1) + '  ', line));
+  setDiskCacheDirectory(cacheDir) {
+    Babel.setCacheDir(cacheDir);
+  }
 
-        return;
-      } else {
-        throw e;
+  static transpile(source, inputFile) {
+    var self = {extraFeatures: {react: true}};
+    var excludedFileExtensionPattern = /\.es5\.js$/i;
+    var inputFilePath = inputFile.getPathInPackage();
+    var outputFilePath = inputFile.getPathInPackage();
+    var fileOptions = inputFile.getFileOptions();
+
+    // If you need to exclude a specific file within a package from Babel
+    // compilation, pass the { transpile: false } options to api.addFiles
+    // when you add that file.
+    if (fileOptions.transpile !== false &&
+        // If you need to exclude a specific file within an app from Babel
+        // compilation, give it the following file extension: .es5.js
+        ! excludedFileExtensionPattern.test(inputFilePath)) {
+
+      var targetCouldBeInternetExplorer8 =
+        inputFile.getArch() === "web.browser";
+
+      self.extraFeatures = self.extraFeatures || {};
+      if (! self.extraFeatures.hasOwnProperty("jscript")) {
+        // Perform some additional transformations to improve
+        // compatibility in older browsers (e.g. wrapping named function
+        // expressions, per http://kiro.me/blog/nfe_dilemma.html).
+        self.extraFeatures.jscript = targetCouldBeInternetExplorer8;
       }
-    }
 
-    return result;
+      var babelOptions = Babel.getDefaultOptions(self.extraFeatures);
+
+      babelOptions.sourceMap = true;
+      babelOptions.filename = inputFilePath;
+      babelOptions.sourceFileName = "/" + inputFilePath;
+      babelOptions.sourceMapName = "/" + outputFilePath + ".map";
+
+      // Capture jsx failures in compiling.
+      try {
+        var result = Babel.compile(source, babelOptions);
+      } catch (e) {
+        if (e.loc) {
+          // Babel error
+          inputFile.error({
+            message: e.message,
+            sourcePath: inputFile.getPathInPackage(),
+            line: e.loc.line,
+            column: e.loc.column
+          });
+
+          console.log('\n\n\n');
+          console.log(inputFile.getPathInPackage());
+          console.log('=====================');
+          console.log(inputFile.getContentsAsString());
+          const lines = ("" + jsx).split(/\n/g);
+          _.each(lines, (line, i) => console.log((i+1) + '  ', line));
+
+          return;
+        } else {
+          throw e;
+        }
+      }
+
+      return result;
+    }
   }
 };
 
 Plugin.registerCompiler({
-  extensions: ['html.jsx']
+  extensions: ['html']
 }, () => new ReactTemplateCompiler()
 );
