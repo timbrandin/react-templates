@@ -64,6 +64,5 @@ Package.onUse(function(api) {
 Package.onTest(function(api) {
   api.use('ecmascript');
   api.use('tinytest');
-  api.use('react-templates');
-  api.addFiles('react-templates-tests.js');
+  api.use('timbrandin:react-templates');
 });
