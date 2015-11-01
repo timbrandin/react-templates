@@ -41,7 +41,6 @@ Npm.depends({
 Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use([
-    // 'ecmascript',
     'isobuild:compiler-plugin@1.0.0',
     'babel-compiler',
   ]);
@@ -66,10 +65,4 @@ Package.onUse(function(api) {
   ], 'client');
 
   api.export(['RT', 'ReactTemplate']);
-});
-
-Package.onTest(function(api) {
-  api.use('ecmascript');
-  api.use('tinytest');
-  api.use('timbrandin:react-templates');
 });
