@@ -15,15 +15,19 @@ Package.registerBuildPlugin({
   use: [
     'babel-compiler@5.8.24_1',
     'ecmascript@0.1.6',
+    'babel-compiler@5.8.24_1',
     'underscore@1.0.4',
     'reactive-var@1.0.6',
     'tracker@1.0.9'
   ],
   sources: [
-    'blaze-regex.js',
+    'events-regex.js',
+    'plugin/events.js',
+
+    'template-regex.js',
     'react-regex.js',
     'react-events.js',
-    'plugin/plugin.js'
+    'plugin/template.js'
   ],
   npmDependencies: {
     'cheerio': '0.7.0'
@@ -37,11 +41,14 @@ Npm.depends({
 Package.onUse(function(api) {
   api.versionsFrom('1.2.1');
   api.use([
-    'ecmascript',
+    // 'ecmascript',
     'isobuild:compiler-plugin@1.0.0',
+    'babel-compiler',
   ]);
   api.imply([
     'babel-runtime@0.1.4',
+    'ecmascript-runtime',
+    'promise',
     'react-runtime@0.14.1_1',
     'kadira:dochead@1.3.2'
   ]);

@@ -36,7 +36,7 @@ RT.check = function(context, string) {
 
 RT.string = function(context, string) {
   if (RT.check(context, string) !== false) {
-    return "" + new RT.SafeString(context[string]());
+    return "" + new RT.SafeString(context[string]);
   }
   return "";
 }
@@ -55,6 +55,12 @@ RT.get = function(props) {
     return React.createElement(ReactTemplate[props.__name], _.omit(props, '__name'));
   }
   return "";
+}
+
+RT.event = function(component, key, context) {
+  if (component && component.events && component.events[key]) {
+    return component.events[key].bind(component, context);
+  }
 }
 
 RT.template = function(name) {

@@ -1,4 +1,4 @@
-BlazeRegex = [
+TemplateRegex = [
   {
     // Replace the head with a reactive dochead component.
     regex: /<(head)[^<>]*>([\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?)<\/\1>/g,
@@ -15,7 +15,7 @@ BlazeRegex = [
     regex: /<(body)[^<>]*>([\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?)<\/\1>/g,
     replace: function(match, className, code) {
       const markup = ReactTemplate.compile(className, code || '');
-      return `ReactTemplate["${className}"] = (context) => { return (${markup}) }; RT.body("${className}");`
+      return `ReactTemplate["${className}"] = (component, context) => { return (${markup}) }; RT.body("${className}");`
     }
   },
   {
@@ -23,7 +23,7 @@ BlazeRegex = [
     regex: /<(template)\sname="([^"]+)"[^<>]*>([\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?)<\/\1>/g,
     replace: function(match, tag, className, code) {
       const markup = ReactTemplate.compile(className, code || '');
-      return `ReactTemplate["${className}"] = (context) => { return (${markup}) }; RT.template("${className}");`;
+      return `ReactTemplate["${className}"] = (component, context) => { return (${markup}) }; RT.template("${className}");`;
     }
   }
 ];

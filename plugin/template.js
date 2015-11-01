@@ -1,7 +1,10 @@
+var cheerio = Npm.require('cheerio');
+
 ReactTemplate = class {
   constructor(source) {
     this._source = source;
   }
+
   static compile(className, markup) {
     markup = ReactTemplate.appendEventMap(className, markup);
 
@@ -11,21 +14,49 @@ ReactTemplate = class {
 
     return markup;
   }
+
   static appendEventMap(className, markup) {
-    // if (GLOBAL.eventMaps[className]) {
-    //
-    // }
+    var events = Events.getEvents(className);
+
+    // Cheerio doesn't like tags without a trailing end.
+    markup = markup.replace(/<((?!br)[^\>]+)\/>/ig, '<$1></$1>');
+    // Load cheerio with the markup.
+    let $ = cheerio.load(markup);
+
+    // Add all events to the matched selectors.
+    for (let key in events) {
+      var selectors = key.split(',');
+      for (let selector of selectors) {
+        let [event, select] = selector.trim().split(/\s(.+)?/);
+
+        // Get the react event name or use custom name.
+        var eventName = ReactEvents[event] ? ReactEvents[event] : event;
+        // Remove duplicate listeners.
+        $(select).removeAttr(eventName);
+        // Append new listener.
+        $(select).attr(eventName, `{RT.event(component, "${key}", context)}`);
+      }
+    }
+
+    // Finally let cheerio create our markup to string.
+    markup = $.html();
+    // Cheerio adds qoutes on all attributes, React don't want that so we have
+    // to remove those quotes.
+    markup = markup.replace(/([\"\'])(\{[\w\W]+?(\{[\w\W]+?\})*\})\1/g, '$2');
+
     return markup;
   }
+
   parse(source) {
     let jsx = source;
 
-    BlazeRegex.forEach(function (obj) {
+    TemplateRegex.forEach(function (obj) {
       jsx = jsx.replace(obj.regex, obj.replace);
     });
 
     return jsx;
   }
+
   toString() {
     return this.parse(this._source);
   }
