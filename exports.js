@@ -42,12 +42,8 @@ RT.string = function(context, string) {
 }
 
 RT.get = function(props) {
-  // A component exists.
-  if (window && window[props.__name]) {
-    return React.createElement(window[props.__name], _.omit(props, '__name'));
-  }
   // A template component exists.
-  else if (Template && Template[props.__name]) {
+  if (Template && Template[props.__name]) {
     return React.createElement(Template[props.__name], _.omit(props, '__name'));
   }
   // A template exists.
