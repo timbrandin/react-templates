@@ -47,7 +47,7 @@ ReactRegex = [
   // Append child components when using {{> template/component}}.
   {
     regex: /({{>\s+([^}]+)}})/g,
-    replace: "<RT.get template='$2' context={context}/>"
+    replace: "<RT.get __name='$2' context={context}/>"
   },
   // Add return and key={index} inside {{#each}}.
   {

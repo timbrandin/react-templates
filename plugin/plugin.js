@@ -31,7 +31,7 @@ ReactTemplate = class {
   }
 }
 
-ReactTemplateCompiler = class ReactTemplateCompiler {
+class ReactTemplateCompiler {
   processFilesForTarget(inputFiles) {
     inputFiles.forEach(function (inputFile) {
       let original = inputFile.getContentsAsString();
@@ -41,7 +41,7 @@ ReactTemplateCompiler = class ReactTemplateCompiler {
       var toBeAdded = {
         sourcePath: outputFilePath,
         path: outputFilePath.replace('.jsx.html', '.jsx.js'),
-        data: source,
+        data: original,
         hash: inputFile.getSourceHash(),
         sourceMap: null,
         bare: !! fileOptions.bare
@@ -126,6 +126,7 @@ ReactTemplateCompiler = class ReactTemplateCompiler {
 };
 
 Plugin.registerCompiler({
-  extensions: ['html']
+  extensions: ['html'],
+  isTemplate: true
 }, () => new ReactTemplateCompiler()
 );

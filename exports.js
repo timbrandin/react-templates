@@ -35,20 +35,36 @@ RT.check = function(context, string) {
 };
 
 RT.string = function(context, string) {
-  if (RT.check(context, string)) {
-    return "" + new RT.SafeString(context.counter);
+  if (RT.check(context, string) !== false) {
+    return "" + new RT.SafeString(context[string]());
   }
   return "";
 }
 
 RT.get = function(props) {
-  // A component exists for the template.
-  if (window[props.template]) {
-    return React.createElement(window[props.template], _.omit(props, 'template'));
+  // A component exists.
+  if (window && window[props.__name]) {
+    return React.createElement(window[props.__name], _.omit(props, '__name'));
+  }
+  // A template component exists.
+  else if (Template && Template[props.__name]) {
+    return React.createElement(Template[props.__name], _.omit(props, '__name'));
   }
   // A template exists.
-  else if (ReactTemplate[props.template]) {
-    return React.createElement(ReactTemplate[props.template], _.omit(props, 'template'));
+  else if (ReactTemplate[props.__name]) {
+    return React.createElement(ReactTemplate[props.__name], _.omit(props, '__name'));
   }
   return "";
+}
+
+RT.template = function(name) {
+  if (Package['timbrandin:sideburns']) {
+    Package['timbrandin:sideburns'].Template._init('template', name);
+  }
+}
+
+RT.body = function(name) {
+  if (Package['timbrandin:sideburns']) {
+    Package['timbrandin:sideburns'].Template._init('body', name);
+  }
 }

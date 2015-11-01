@@ -15,7 +15,7 @@ BlazeRegex = [
     regex: /<(body)[^<>]*>([\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?)<\/\1>/g,
     replace: function(match, className, code) {
       const markup = ReactTemplate.compile(className, code || '');
-      return `ReactTemplate["${className}"] = (context) => { return (${markup}) };`;
+      return `ReactTemplate["${className}"] = (context) => { return (${markup}) }; RT.body("${className}");`
     }
   },
   {
@@ -23,7 +23,7 @@ BlazeRegex = [
     regex: /<(template)\sname="([^"]+)"[^<>]*>([\w\W]*?(<\1[^<>]*>[\w\W]*?<\/\1>)*[\w\W]*?)<\/\1>/g,
     replace: function(match, tag, className, code) {
       const markup = ReactTemplate.compile(className, code || '');
-      return `ReactTemplate["${className}"] = (context) => { return (${markup}) };`;
+      return `ReactTemplate["${className}"] = (context) => { return (${markup}) }; RT.template("${className}");`;
     }
   }
 ];
