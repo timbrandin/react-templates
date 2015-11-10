@@ -57,7 +57,7 @@ ReactRegex = [
   // {{#each}} in
   {
     regex: /{{#each\s+([^\s]+)\s+in\s+([^}]+)\s*}}/g,
-    replace: "{(RT.check(context, '$2') ? context.$2 : []).map(function($1, index){let context=__component;context.$1=$1"
+    replace: "{(RT.lookup(context, '$2') || []).map(function($1, index){let context = component.data; context.$1 = $1; context.__context = $1;"
   },
   // {{/each}}
   {
@@ -67,7 +67,7 @@ ReactRegex = [
   // ^{{#if}}
   {
     regex: /^\W*{{#if\s+([\w]+)\s*}}/g,
-    replace: "<span>{RT.check(context, '$1') ? ("
+    replace: "<span>{RT.lookup(context, '$1') ? ("
   },
   // ^{{#if ...}}
   {
@@ -88,7 +88,7 @@ ReactRegex = [
   // {{#if}}
   {
     regex: /{{#if\s+(\w+)\s*}}/g,
-    replace: "{RT.check(context, '$1') ? ("
+    replace: "{RT.lookup(context, '$1') ? ("
   },
   // {{else}} {{/if}}
   {
@@ -103,7 +103,7 @@ ReactRegex = [
   // ^{{#unless}}
   {
     regex: /^\W*{{#unless\s+(\w+)\s*}}/g,
-    replace: "<span>{!RT.check(context, '$1') ? ("
+    replace: "<span>{!RT.lookup(context, '$1') ? ("
   },
   // {{/unless}}$
   {
@@ -113,7 +113,7 @@ ReactRegex = [
   // {{#unless}}
   {
     regex: /{{#unless\s+(\w+)\s*}}/g,
-    replace: "{!RT.check(context, '$1') ? ("
+    replace: "{!RT.lookup(context, '$1') ? ("
   },
   // {{else}} {{/unless}}
   {
@@ -130,34 +130,34 @@ ReactRegex = [
   // {{{helper}}} raw HTML
   {
     regex: /{{{([^}]*)}}}/g,
-    replace: "{RT.check(context, '$1') ? context.$1 : ''}"
+    replace: "{RT.lookup(context, '$1') ? context.$1 : ''}"
   },
   // {{helper}} SafeString – Dynamic Attribute (class)
   {
     regex: /\sclass={{([^}]*)}}/g,
-    replace: " className={RT.check(context, '$1') ? '' + new RT.classNames(context.$1) : ''}"
+    replace: " className={RT.lookup(context, '$1') ? '' + new RT.classNames(context.$1) : ''}"
   },
 
   // {{helper}} SafeString – Dynamic Attribute (other)
   {
     regex: /={{([^}]*)}}/g,
-    replace: "={RT.check(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
+    replace: "={RT.lookup(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
   },
 
   // {{helper}} SafeString – In Attribute Values (class)
   {
     regex: /\sclass="([^\"{]*){{([^}]*)}}([^\"{]*)\"/g,
-    replace: " className={RT.check(context, '$2') ? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
+    replace: " className={RT.lookup(context, '$2') ? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
   },
   // {{helper}} SafeString – In Attribute Values (other)
   {
     regex: /="([^\"{]*){{([^}]*)}}([^\"{]*)\"/g,
-    replace: "={RT.check(context, '$2')? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
+    replace: "={RT.lookup(context, '$2')? '$1' + new RT.classNames(context.$2) + '$3' : ''}"
   },
   // {{helper}} SafeString
   {
     regex: /{{([^}]*)}}/g,
-    // replace: "{RT.check(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
+    // replace: "{RT.lookup(context, '$1') ? '' + new RT.SafeString(context.$1) : ''}"
     replace: "{RT.string(context, '$1')}"
   },
   // Fix that annoying issue with React, and allow usage of class.

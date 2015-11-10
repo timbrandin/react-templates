@@ -16,27 +16,44 @@ RT.classNames.prototype.toString = RT.classNames.prototype.toHTML = function() {
   return '' + new RT.SafeString(RT._classNames(this.obj));
 };
 
-RT.check = function(context, string) {
+RT.lookup = function(context, string) {
   const tests = string.split('.');
   if (!context) {
     return false;
   }
+  // Look in the context for a matching dot-object pattern.
   let obj = context;
-  _.each(tests, function(test) {
-    if (!obj) {
+  for (let i in tests) {
+    let test = tests[i];
+    if (typeof obj === 'undefined') {
       return false;
     }
-    obj = obj[test];
-    if (!obj || !_.has(obj, string)) {
-      return false;
+    // If we're running through an each-in loop pass on the context.
+    if (i == tests.length - 1 && context.__context) {
+      props = Object.getOwnPropertyDescriptor(obj, test);
+      if (props.hasOwnProperty('get')) {
+        obj = props.get.call(context.__context);
+      }
+      else {
+        obj = props.value;
+      }
     }
-  });
+    else {
+      // Iterate on to next child in dot-object pattern.
+      obj = obj[test];
+    }
+  }
+  // Last check if undefined.
+  if (typeof obj === 'undefined') {
+    return false;
+  }
   return obj;
 };
 
 RT.string = function(context, string) {
-  if (RT.check(context, string) !== false) {
-    return "" + new RT.SafeString(context[string]);
+  let value = RT.lookup(context, string);
+  if (value !== false) {
+    return "" + new RT.SafeString(value);
   }
   return "";
 }
